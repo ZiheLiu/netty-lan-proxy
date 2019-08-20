@@ -15,10 +15,11 @@ public class FrontendCreateChannelHandler extends ChannelInboundHandlerAdapter {
 
   public static void send(RpMessage msg) {
     System.out.println("<FrontendCreateChannelHandler send>: " + msg.getPort());
-    backendChannel.writeAndFlush(msg);
+    backendChannel.write(msg);
   }
 
   public static void flush() {
+    backendChannel.flush();
   }
 
   public static boolean connected2backend() {

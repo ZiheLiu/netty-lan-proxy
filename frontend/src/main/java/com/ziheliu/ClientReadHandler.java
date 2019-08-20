@@ -31,6 +31,6 @@ public class ClientReadHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
     System.out.println("<ClientReadHandler channelReadComplete>");
-    //    FrontendCreateChannelHandler.flush();
+    FrontendCreateChannelHandler.flush();
   }
 }

@@ -40,12 +40,12 @@ public class SubChannelHandler extends ChannelInboundHandlerAdapter {
         rpMessage.getPort(),
         rpMessage.getChannelId(),
         buf);
-    ctx.channel().writeAndFlush(res);
+    ctx.channel().write(res);
   }
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx2) throws Exception {
     System.out.println("<<SubChannelHandler.channelReadComplete>>");
-    // ctx.channel().writeAndFlush(Unpooled.EMPTY_BUFFER);
+    ctx.channel().flush();
   }
 }
