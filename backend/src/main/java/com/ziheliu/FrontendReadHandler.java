@@ -4,7 +4,6 @@ import com.ziheliu.protocol.RpMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 
@@ -28,7 +27,7 @@ public class FrontendReadHandler extends ChannelInboundHandlerAdapter {
 
     Bootstrap bootstrap = new Bootstrap();
     bootstrap
-      .group(new NioEventLoopGroup())
+      .group(ctx.channel().eventLoop())
       .channel(NioSocketChannel.class)
       .handler(new SubChannelHandler(ctx, rpMessage));
 
