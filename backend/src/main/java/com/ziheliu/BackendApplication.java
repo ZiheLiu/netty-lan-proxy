@@ -33,12 +33,12 @@ public class BackendApplication {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
               ch.pipeline()
+                .addLast(new LengthFieldPrepender(4))
+                .addLast(new RpEncoder())
+
                 .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
                 .addLast(new RpDecoder())
-                .addLast(new FrontendReadHandler())
-
-                .addLast(new LengthFieldPrepender(4))
-                .addLast(new RpEncoder());
+                .addLast(new FrontendReadHandler());
             }
           });
 
