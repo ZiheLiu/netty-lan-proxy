@@ -1,8 +1,8 @@
-# Netty Reverse Proxy
+# Netty NAT Proxy
 
 [![Build Status](https://travis-ci.org/ZiheLiu/JavaMavenTeamplate.svg?branch=master)](https://travis-ci.org/ZiheLiu/JavaMavenTeamplate)
 
-Reverse proxy using netty.
+Proxy server and client for Network Address Translation (NAT) using netty.
 
 
 
