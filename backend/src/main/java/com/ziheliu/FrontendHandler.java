@@ -55,6 +55,7 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
       if (!f.isSuccess()) {
         LOGGER.error("Connect to {}:{} failed, cause: {}.",
             serverAddr.getHost(), serverAddr.getPort(), f.cause());
+        proxyMessage.getData().release();
         ctx.writeAndFlush(new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
             proxyMessage.getClientChannelId(),
             Unpooled.EMPTY_BUFFER));
