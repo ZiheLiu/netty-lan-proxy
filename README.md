@@ -1,8 +1,8 @@
-# Netty NAT Proxy
+# Netty LAN Proxy
 
 [![Build Status](https://travis-ci.org/ZiheLiu/JavaMavenTeamplate.svg?branch=master)](https://travis-ci.org/ZiheLiu/JavaMavenTeamplate)
 
-Proxy server and client for Network Address Translation (NAT) using netty.
+Proxy server and client for Local Area Network (LAN) using netty.
 
 
 
