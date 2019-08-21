@@ -6,6 +6,7 @@ import com.ziheliu.common.protocol.ProxyMessage;
 import com.ziheliu.common.protocol.ProxyMessageType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -47,6 +48,14 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
 
     AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
     Address serverAddr = entry.getServerAddr();
-    bootstrap.connect(new InetSocketAddress(serverAddr.getHost(), serverAddr.getPort()));
+    ChannelFuture future = bootstrap.connect(new InetSocketAddress(serverAddr.getHost(), serverAddr.getPort()));
+    future.addListener(f -> {
+      if (!f.isSuccess()) {
+        LOGGER.error("Connect to {}:{} failed, cause: {}.", serverAddr.getHost(), serverAddr.getPort(), f.cause());
+        ctx.writeAndFlush(new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+          proxyMessage.getClientChannelId(),
+          Unpooled.EMPTY_BUFFER));
+      }
+    });
   }
 }
