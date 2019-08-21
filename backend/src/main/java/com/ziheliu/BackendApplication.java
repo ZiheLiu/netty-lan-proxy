@@ -1,8 +1,14 @@
 package com.ziheliu;
 
-import com.ziheliu.protocol.RpDecoder;
-import com.ziheliu.protocol.RpEncoder;
+import com.ziheliu.common.config.Address;
+import com.ziheliu.common.config.AddressEntry;
+import com.ziheliu.common.config.Config;
+import com.ziheliu.common.container.Container;
+import com.ziheliu.common.container.ContainerHelper;
+import com.ziheliu.common.protocol.ProxyDecoder;
+import com.ziheliu.common.protocol.ProxyEncoder;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -12,44 +18,50 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 
-public class BackendApplication {
-  private final String host;
-  private final int port;
+public class BackendApplication implements Container {
+  private EventLoopGroup group;
 
-  public BackendApplication(String host, int port) {
-    this.host = host;
-    this.port = port;
-  }
+  public void start() {
+    group = new NioEventLoopGroup();
+    Bootstrap bootstrap = new Bootstrap();
+    bootstrap
+      .group(group)
+      .channel(NioSocketChannel.class)
+      .handler(new ChannelInitializer<SocketChannel>() {
+        @Override
+        protected void initChannel(SocketChannel ch) throws Exception {
+          ch.pipeline()
+            .addLast(new LengthFieldPrepender(4))
+            .addLast(new ProxyEncoder())
 
-  public void start() throws InterruptedException {
-    EventLoopGroup group = new NioEventLoopGroup();
-    try {
-      Bootstrap bootstrap = new Bootstrap();
-      bootstrap
-          .group(group)
-          .channel(NioSocketChannel.class)
-          .handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline()
-                .addLast(new LengthFieldPrepender(4))
-                .addLast(new RpEncoder())
+            .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+            .addLast(new ProxyDecoder())
+            .addLast(new FrontendHandler());
+        }
+      });
 
-                .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
-                .addLast(new RpDecoder())
-                .addLast(new FrontendReadHandler());
-            }
-          });
+    for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
+      Address address = Config.getInstance().getMainAddr();
+      ChannelFuture future = bootstrap.connect(new InetSocketAddress(address.getHost(), address.getPort()));
+      future.addListener(f -> {
+        if (f.isSuccess()) {
+          Channel channel = ((ChannelFuture) f).channel();
+          channel.attr(Constants.ADDRESS_ENTRY).set(entry);
+        }
+      });
 
-      ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port)).sync();
-      future.channel().closeFuture().sync();
-    } finally {
-      group.shutdownGracefully().sync();
     }
   }
 
+  @Override
+  public void stop() {
+    group.shutdownGracefully().syncUninterruptibly();
+  }
+
   public static void main(String[] args) throws InterruptedException {
-    new BackendApplication("localhost", 8000).start();
+    BackendApplication app = new BackendApplication();
+    ContainerHelper.start(Collections.singletonList(app));
   }
 }

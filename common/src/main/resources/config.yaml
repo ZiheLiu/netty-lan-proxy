@@ -1,0 +1,16 @@
+mainAddr:
+  host: "0.0.0.0"
+  port: 8000
+addressEntries:
+  - frontendAddr:
+      host: "localhost"
+      port: 8001
+    serverAddr:
+      host: "localhost"
+      port: 9001
+  - frontendAddr:
+      host: "localhost"
+      port: 8002
+    serverAddr:
+      host: "localhost"
+      port: 9002
