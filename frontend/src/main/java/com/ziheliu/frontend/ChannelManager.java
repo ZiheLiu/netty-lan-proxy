@@ -8,7 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ChannelManager {
   private static Map<Integer, ChannelHandlerContext> port2backendCtx = new ConcurrentHashMap<>();
 
-  private static Map<Integer, ChannelHandlerContext> clientChannelId2ctx = new ConcurrentHashMap<>();
+  private static
+      Map<Integer, ChannelHandlerContext> clientChannelId2ctx = new ConcurrentHashMap<>();
 
   private static AtomicInteger nextClientChannelId = new AtomicInteger();
 

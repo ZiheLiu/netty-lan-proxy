@@ -43,20 +43,20 @@ public class FrontendApplication implements Container {
   private void startMainPort() {
     ServerBootstrap bootstrap = new ServerBootstrap();
     bootstrap
-      .group(bossGroup, workerGroup)
-      .channel(NioServerSocketChannel.class)
-      .childHandler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        protected void initChannel(SocketChannel ch) throws Exception {
-          ch.pipeline()
-            .addLast(new LengthFieldPrepender(4))
-            .addLast(new ProxyEncoder())
+        .group(bossGroup, workerGroup)
+        .channel(NioServerSocketChannel.class)
+        .childHandler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(SocketChannel ch) throws Exception {
+            ch.pipeline()
+              .addLast(new LengthFieldPrepender(4))
+              .addLast(new ProxyEncoder())
 
-            .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
-            .addLast(new ProxyDecoder())
-            .addLast(new BackendHandler());
-        }
-      });
+              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+              .addLast(new ProxyDecoder())
+              .addLast(new BackendHandler());
+          }
+        });
 
     Address address = Config.getInstance().getMainAddr();
     bootstrap.bind(new InetSocketAddress(address.getHost(), address.getPort()));
@@ -65,15 +65,15 @@ public class FrontendApplication implements Container {
   private void startClientPorts() {
     ServerBootstrap bootstrap = new ServerBootstrap();
     bootstrap
-      .group(bossGroup, workerGroup)
-      .channel(NioServerSocketChannel.class)
-      .childHandler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        protected void initChannel(SocketChannel ch) throws Exception {
-          ch.pipeline()
-            .addLast(new ClientHandler());
-        }
-      });
+        .group(bossGroup, workerGroup)
+        .channel(NioServerSocketChannel.class)
+        .childHandler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(SocketChannel ch) throws Exception {
+            ch.pipeline()
+              .addLast(new ClientHandler());
+          }
+        });
 
     for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
       Address address = entry.getFrontendAddr();

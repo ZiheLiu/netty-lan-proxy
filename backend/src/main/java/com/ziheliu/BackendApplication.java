@@ -27,24 +27,25 @@ public class BackendApplication implements Container {
     group = new NioEventLoopGroup();
     Bootstrap bootstrap = new Bootstrap();
     bootstrap
-      .group(group)
-      .channel(NioSocketChannel.class)
-      .handler(new ChannelInitializer<SocketChannel>() {
-        @Override
-        protected void initChannel(SocketChannel ch) throws Exception {
-          ch.pipeline()
-            .addLast(new LengthFieldPrepender(4))
-            .addLast(new ProxyEncoder())
+        .group(group)
+        .channel(NioSocketChannel.class)
+        .handler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(SocketChannel ch) throws Exception {
+            ch.pipeline()
+              .addLast(new LengthFieldPrepender(4))
+              .addLast(new ProxyEncoder())
 
-            .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
-            .addLast(new ProxyDecoder())
-            .addLast(new FrontendHandler());
-        }
-      });
+              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+              .addLast(new ProxyDecoder())
+              .addLast(new FrontendHandler());
+          }
+        });
 
     for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
       Address address = Config.getInstance().getMainAddr();
-      ChannelFuture future = bootstrap.connect(new InetSocketAddress(address.getHost(), address.getPort()));
+      InetSocketAddress socketAddress = new InetSocketAddress(address.getHost(), address.getPort());
+      ChannelFuture future = bootstrap.connect(socketAddress);
       future.addListener(f -> {
         if (f.isSuccess()) {
           Channel channel = ((ChannelFuture) f).channel();

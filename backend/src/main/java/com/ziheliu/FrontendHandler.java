@@ -22,11 +22,11 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
     AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
 
     LOGGER.info("Create channel to frontend ({}:{})",
-      entry.getFrontendAddr().getHost(),
-      entry.getFrontendAddr().getPort());
+        entry.getFrontendAddr().getHost(),
+        entry.getFrontendAddr().getPort());
 
     ProxyMessage msg = new ProxyMessage(ProxyMessageType.SETUP_BACKEND_CONNECTION,
-      entry.getFrontendAddr().getPort(), Unpooled.EMPTY_BUFFER);
+        entry.getFrontendAddr().getPort(), Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(msg);
 
     super.channelActive(ctx);
@@ -35,7 +35,6 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     ProxyMessage proxyMessage = (ProxyMessage) msg;
-//    proxyMessage.getData().retain();
     send2server(ctx, proxyMessage);
   }
 
@@ -48,13 +47,17 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
 
     AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
     Address serverAddr = entry.getServerAddr();
-    ChannelFuture future = bootstrap.connect(new InetSocketAddress(serverAddr.getHost(), serverAddr.getPort()));
+    InetSocketAddress socketAddress = new InetSocketAddress(
+        serverAddr.getHost(), serverAddr.getPort());
+
+    ChannelFuture future = bootstrap.connect(socketAddress);
     future.addListener(f -> {
       if (!f.isSuccess()) {
-        LOGGER.error("Connect to {}:{} failed, cause: {}.", serverAddr.getHost(), serverAddr.getPort(), f.cause());
+        LOGGER.error("Connect to {}:{} failed, cause: {}.",
+            serverAddr.getHost(), serverAddr.getPort(), f.cause());
         ctx.writeAndFlush(new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
-          proxyMessage.getClientChannelId(),
-          Unpooled.EMPTY_BUFFER));
+            proxyMessage.getClientChannelId(),
+            Unpooled.EMPTY_BUFFER));
       }
     });
   }

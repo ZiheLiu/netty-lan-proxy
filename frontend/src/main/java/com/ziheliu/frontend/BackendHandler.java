@@ -32,7 +32,8 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
   }
 
   private void handleSetupBackendConnection(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-    LOGGER.info("Create channel to backend to watch frontend port: {}", proxyMessage.getClientPort());
+    LOGGER.info("Create channel to backend to watch frontend port: {}",
+        proxyMessage.getClientPort());
 
     ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
     proxyMessage.getData().release();
