@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChannelManager {
   private static Map<Integer, ChannelHandlerContext> port2backendCtx = new ConcurrentHashMap<>();
+  private static Map<ChannelHandlerContext, Integer> backendCtx2port = new ConcurrentHashMap<>();
 
   private static
       Map<Integer, ChannelHandlerContext> clientChannelId2ctx = new ConcurrentHashMap<>();
@@ -14,12 +15,27 @@ public class ChannelManager {
   private static AtomicInteger nextClientChannelId = new AtomicInteger();
 
 
-  public static void putBackendCtx(int port, ChannelHandlerContext ctx) {
-    port2backendCtx.put(port, ctx);
+  public static boolean putBackendCtx(int port, ChannelHandlerContext ctx) {
+    ChannelHandlerContext prevCtx = port2backendCtx.putIfAbsent(port, ctx);
+    boolean res = prevCtx == null;
+    if (res) {
+      backendCtx2port.put(ctx, port);
+    }
+    return res;
   }
 
   public static ChannelHandlerContext getBackendCtx(int port) {
     return port2backendCtx.get(port);
+  }
+
+  public static Integer removeBackendCtx(ChannelHandlerContext ctx) {
+    Integer port = backendCtx2port.remove(ctx);
+    if (port == null) {
+      return null;
+    }
+
+    port2backendCtx.remove(port);
+    return port;
   }
 
   public static int putClientCtx(ChannelHandlerContext ctx) {

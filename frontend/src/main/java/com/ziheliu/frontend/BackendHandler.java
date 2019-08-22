@@ -31,11 +31,27 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
     super.channelRead(ctx, msg);
   }
 
-  private void handleBackendConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-    LOGGER.info("Backend connects to to watch port#{}", proxyMessage.getClientPort());
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    Integer port = ChannelManager.removeBackendCtx(ctx);
+    if (port != null) {
+      LOGGER.info("Backend disconnects to watch port#{}", port);
+    }
 
-    ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
+    super.channelInactive(ctx);
+  }
+
+  private void handleBackendConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+    boolean res = ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
     proxyMessage.getData().release();
+
+    if (res) {
+      LOGGER.info("Backend connects to watch port#{}", proxyMessage.getClientPort());
+    } else {
+      LOGGER.info("Backend fails to connect to watch port#{}, "
+          + "this port already has backend's connection", proxyMessage.getClientPort());
+      ctx.close();
+    }
   }
 
   private void handleClientDisconnect(ProxyMessage proxyMessage) {
