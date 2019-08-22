@@ -39,7 +39,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     Channel channel = ctx.channel();
 
     int channelId = channel.attr(Constants.CHANNEL_ID).get();
-    ProxyMessage proxyMessage = new ProxyMessage(ProxyMessageType.REQUEST_DATA, channelId, buf);
+    ProxyMessage proxyMessage = new ProxyMessage(ProxyMessageType.CLIENT_DATA, channelId, buf);
 
     ChannelHandlerContext backendCtx = channel.attr(Constants.BACKEND_CTX).get();
     backendCtx.write(proxyMessage);

@@ -22,12 +22,12 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
 
-    LOGGER.info("Create channel to frontend ({}:{})",
+    LOGGER.info("Connect to frontend to watch {}:{}",
         entry.getFrontendAddr().getHost(),
         entry.getFrontendAddr().getPort());
 
     ProxyMessage msg = new ProxyMessage(
-        ProxyMessageType.SETUP_BACKEND_CONNECTION,
+        ProxyMessageType.BACKEND_CONNECT,
         entry.getFrontendAddr().getPort(),
         Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(msg);
@@ -66,7 +66,7 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
 
           proxyMessage.getData().release();
           ctx.writeAndFlush(new ProxyMessage(
-              ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+              ProxyMessageType.CLIENT_DISCONNECT,
               proxyMessage.getClientChannelId(),
               Unpooled.EMPTY_BUFFER));
         } else {

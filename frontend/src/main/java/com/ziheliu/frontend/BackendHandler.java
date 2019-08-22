@@ -14,33 +14,32 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     ProxyMessage proxyMessage = (ProxyMessage) msg;
     switch (proxyMessage.getType()) {
-      case ProxyMessageType.SETUP_BACKEND_CONNECTION:
-        handleSetupBackendConnection(ctx, proxyMessage);
+      case ProxyMessageType.BACKEND_CONNECT:
+        handleBackendConnect(ctx, proxyMessage);
         break;
-      case ProxyMessageType.CLOSE_CLIENT_CONNECTION:
-        handleCloseClientConnection(proxyMessage);
+      case ProxyMessageType.CLIENT_DISCONNECT:
+        handleClientDisconnect(proxyMessage);
         break;
-      case ProxyMessageType.RESPONSE_DATA:
+      case ProxyMessageType.SERVER_DATA:
         handleResponseData(proxyMessage);
         break;
       default:
-        LOGGER.error("ProxyMessage.type is invalid: " + proxyMessage.getType());
+        LOGGER.error("ProxyMessage.type is invalid: {}", proxyMessage.getType());
         System.exit(-1);
     }
 
     super.channelRead(ctx, msg);
   }
 
-  private void handleSetupBackendConnection(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-    LOGGER.info("Create channel to backend to watch frontend port: {}",
-        proxyMessage.getClientPort());
+  private void handleBackendConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+    LOGGER.info("Backend connects to to watch port#{}", proxyMessage.getClientPort());
 
     ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
     proxyMessage.getData().release();
   }
 
-  private void handleCloseClientConnection(ProxyMessage proxyMessage) {
-    LOGGER.info("Close client connection with channelId#{}", proxyMessage.getClientChannelId());
+  private void handleClientDisconnect(ProxyMessage proxyMessage) {
+    LOGGER.info("Client channelId#{} disconnects", proxyMessage.getClientChannelId());
 
     ChannelManager.getClientCtx(proxyMessage.getClientChannelId()).close();
     ChannelManager.removeClientCtx(proxyMessage.getClientChannelId());

@@ -32,7 +32,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     ChannelManager.removeServerChannel(proxyMessage.getClientChannelId());
 
-    ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+    ProxyMessage res = new ProxyMessage(ProxyMessageType.CLIENT_DISCONNECT,
         proxyMessage.getClientChannelId(),
         Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(res);
@@ -42,7 +42,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx2, Object msg) throws Exception {
     ByteBuf buf = (ByteBuf) msg;
 
-    ProxyMessage res = new ProxyMessage(ProxyMessageType.RESPONSE_DATA,
+    ProxyMessage res = new ProxyMessage(ProxyMessageType.SERVER_DATA,
         proxyMessage.getClientChannelId(),
         buf);
     ctx.write(res);
@@ -58,7 +58,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     LOGGER.error("Connection with channelId#{} has exception, close it, cause: {}",
         proxyMessage.getClientChannelId(), cause.getMessage());
 
-    ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+    ProxyMessage res = new ProxyMessage(ProxyMessageType.CLIENT_DISCONNECT,
         proxyMessage.getClientChannelId(), Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(res);
 

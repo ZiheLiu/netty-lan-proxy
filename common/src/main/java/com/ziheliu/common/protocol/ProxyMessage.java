@@ -23,7 +23,7 @@ public class ProxyMessage {
   }
 
   public int getClientPort() {
-    if (type == ProxyMessageType.SETUP_BACKEND_CONNECTION) {
+    if (type == ProxyMessageType.BACKEND_CONNECT) {
       return clientChannelId;
     }
     return -1;

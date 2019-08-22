@@ -12,5 +12,5 @@ addressEntries:
       host: "localhost"
       port: 8002
     serverAddr:
-      host: "localhost"
-      port: 5000
+      host: "118.25.52.159"
+      port: 22
