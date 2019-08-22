@@ -6,8 +6,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerHandler extends ChannelInboundHandlerAdapter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerHandler.class);
+
   private final ChannelHandlerContext ctx;
   private final ProxyMessage proxyMessage;
 
@@ -42,5 +46,17 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx2) throws Exception {
     ctx.flush();
+  }
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx2, Throwable cause) throws Exception {
+    LOGGER.error(cause.getMessage());
+
+    ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+    proxyMessage.getClientChannelId(),
+    Unpooled.EMPTY_BUFFER);
+    ctx.writeAndFlush(res);
+
+    ctx2.close();
   }
 }

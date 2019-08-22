@@ -13,4 +13,4 @@ addressEntries:
       port: 8002
     serverAddr:
       host: "localhost"
-      port: 9002
+      port: 5000
