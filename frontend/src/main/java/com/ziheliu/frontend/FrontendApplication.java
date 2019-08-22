@@ -20,7 +20,7 @@ import java.util.Collections;
 
 public class FrontendApplication implements Container {
 
-  private EventLoopGroup bossGroup = new NioEventLoopGroup();
+  private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
   private EventLoopGroup workerGroup = new NioEventLoopGroup();
 
   public static void main(String[] args) throws InterruptedException {
