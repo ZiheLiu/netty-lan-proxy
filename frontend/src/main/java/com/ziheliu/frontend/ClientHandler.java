@@ -20,7 +20,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     ChannelHandlerContext backendCtx = ChannelManager.getBackendCtx(frontendPort);
 
     if (backendCtx == null) {
-      LOGGER.error("The port {} do not create channel to backend.", frontendPort);
+      LOGGER.warn("The port {} do not create channel to backend.", frontendPort);
       ctx.close();
     } else {
       ctx.channel().attr(Constants.BACKEND_CTX).set(backendCtx);

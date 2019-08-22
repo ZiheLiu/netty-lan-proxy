@@ -19,8 +19,10 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,9 @@ import org.slf4j.LoggerFactory;
 public class BackendApplication implements Container {
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendApplication.class);
 
-  private EventLoopGroup group;
+  private final EventLoopGroup group = new NioEventLoopGroup();
+  private final Bootstrap bootstrap = new Bootstrap();
+  private final IdleCheckHandler idleCheckHandler = new IdleCheckHandler(bootstrap);
 
   public static void main(String[] args) throws InterruptedException {
     BackendApplication app = new BackendApplication();
@@ -36,44 +40,52 @@ public class BackendApplication implements Container {
   }
 
   public void start() {
-    group = new NioEventLoopGroup();
-    Bootstrap bootstrap = new Bootstrap();
-    bootstrap
-        .group(group)
-        .channel(NioSocketChannel.class)
-        .handler(new ChannelInitializer<SocketChannel>() {
-          @Override
-          protected void initChannel(SocketChannel ch) throws Exception {
-            ch.pipeline()
-              .addLast(new SslHandler(getEngine()))
+    synchronized (bootstrap) {
+      bootstrap
+          .group(group)
+          .channel(NioSocketChannel.class)
+          .handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            protected void initChannel(SocketChannel ch) throws Exception {
+              ch.pipeline()
+                .addLast(new SslHandler(getEngine()))
 
-              .addLast(new LengthFieldPrepender(4))
-              .addLast(new ProxyEncoder())
+                .addLast(new LengthFieldPrepender(4))
+                .addLast(new ProxyEncoder())
 
-              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
-              .addLast(new ProxyDecoder())
-              .addLast(new FrontendHandler());
-          }
-        });
+                .addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS))
+                .addLast(idleCheckHandler)
 
-    for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
-      Address address = Config.getInstance().getMainAddr();
-      InetSocketAddress socketAddress = new InetSocketAddress(address.getHost(), address.getPort());
-      ChannelFuture future = bootstrap.connect(socketAddress);
-      future.addListener(f -> {
-        if (f.isSuccess()) {
+                .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+                .addLast(new ProxyDecoder())
+                .addLast(new FrontendHandler());
+            }
+          });
+
+      for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
+        Address address = Config.getInstance().getMainAddr();
+        InetSocketAddress socketAddress = new InetSocketAddress(
+            address.getHost(), address.getPort());
+
+        ChannelFuture future = bootstrap.connect(socketAddress);
+
+        future.addListener(f -> {
           Channel channel = ((ChannelFuture) f).channel();
           channel.attr(Constants.ADDRESS_ENTRY).set(entry);
-        } else {
-          LOGGER.error("Connect to {}:{} failed, cause: {}",
-              address.getHost(), address.getPort(), f.cause());
-        }
-      });
+
+          if (!f.isSuccess()) {
+            LOGGER.warn("Connect to {}:{} failed, cause: {}",
+                address.getHost(), address.getPort(), f.cause().getMessage());
+            ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
+          }
+        });
+      }
     }
   }
 
   @Override
   public void stop() {
+    idleCheckHandler.stop();
     group.shutdownGracefully().syncUninterruptibly();
   }
 

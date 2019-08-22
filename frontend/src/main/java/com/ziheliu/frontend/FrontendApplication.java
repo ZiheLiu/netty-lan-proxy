@@ -17,8 +17,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLEngine;
 
 public class FrontendApplication implements Container {
@@ -56,6 +58,9 @@ public class FrontendApplication implements Container {
 
               .addLast(new LengthFieldPrepender(4))
               .addLast(new ProxyEncoder())
+
+              .addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS))
+              .addLast(new IdleCheckHandler())
 
               .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
               .addLast(new ProxyDecoder())

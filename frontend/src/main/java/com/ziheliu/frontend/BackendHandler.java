@@ -24,8 +24,10 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
       case ProxyMessageType.SERVER_DATA:
         handleResponseData(proxyMessage);
         break;
+      case ProxyMessageType.BACKEND_HEART_BEAT:
+        break;
       default:
-        LOGGER.error("ProxyMessage.type is invalid: {}", proxyMessage.getType());
+        LOGGER.warn("ProxyMessage.type is invalid: {}", proxyMessage.getType());
         System.exit(-1);
     }
 

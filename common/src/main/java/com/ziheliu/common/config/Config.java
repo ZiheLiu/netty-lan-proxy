@@ -21,14 +21,14 @@ public class Config {
       Yaml yaml = new Yaml();
       instance = yaml.loadAs(fin, Config.class);
     } catch (Exception e) {
-      LOGGER.error("Load config yaml failed, error: " + e.getMessage());
+      LOGGER.warn("Load config yaml failed, error: " + e.getMessage());
       System.exit(-1);
     } finally {
       if (fin != null) {
         try {
           fin.close();
         } catch (IOException e) {
-          LOGGER.error("Close config yaml fialed, error: " + e.getMessage());
+          LOGGER.warn("Close config yaml fialed, error: " + e.getMessage());
           System.exit(-1);
         }
       }

@@ -55,7 +55,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx2, Throwable cause) throws Exception {
-    LOGGER.error("Connection with channelId#{} has exception, close it, cause: {}",
+    LOGGER.warn("Connection with channelId#{} has exception, close it, cause: {}",
         proxyMessage.getClientChannelId(), cause.getMessage());
 
     ProxyMessage res = new ProxyMessage(ProxyMessageType.CLIENT_DISCONNECT,
