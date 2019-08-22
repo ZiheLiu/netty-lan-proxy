@@ -22,6 +22,7 @@ import io.netty.util.Timer;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +39,7 @@ public class IdleCheckHandler extends ChannelInboundHandlerAdapter {
   private final AtomicInteger attempts = new AtomicInteger();
 
   private final Timer timer = new HashedWheelTimer();
-  private final Bootstrap bootstrap;
-
-  public IdleCheckHandler(Bootstrap bootstrap) {
-    this.bootstrap = bootstrap;
-  }
+  private AtomicReference<Bootstrap> bootstrapRef = new AtomicReference<>();
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -97,26 +94,32 @@ public class IdleCheckHandler extends ChannelInboundHandlerAdapter {
         InetSocketAddress socketAddress = new InetSocketAddress(
             address.getHost(), address.getPort());
 
-        synchronized (bootstrap) {
-          ChannelFuture future = bootstrap.connect(socketAddress);
+        while (bootstrapRef.get() == null) {
 
-          future.addListener(f -> {
-            AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
-            Channel channel = ((ChannelFuture) f).channel();
-            channel.attr(Constants.ADDRESS_ENTRY).set(entry);
-
-            if (!f.isSuccess()) {
-              LOGGER.warn("Connect to {}:{} failed, cause: {}",
-                  address.getHost(), address.getPort(), f.cause().getMessage());
-              ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
-            }
-          });
         }
+
+        ChannelFuture future = bootstrapRef.get().connect(socketAddress);
+
+        future.addListener(f -> {
+          AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
+          Channel channel = ((ChannelFuture) f).channel();
+          channel.attr(Constants.ADDRESS_ENTRY).set(entry);
+
+          if (!f.isSuccess()) {
+            LOGGER.warn("Connect to {}:{} failed, cause: {}",
+                address.getHost(), address.getPort(), f.cause().getMessage());
+            ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
+          }
+        });
 
       }, timeout, TimeUnit.MILLISECONDS);
     }
 
     super.channelInactive(ctx);
+  }
+
+  public void setBootstrap(Bootstrap bootstrap) {
+    bootstrapRef.set(bootstrap);
   }
 
   public void stop() {

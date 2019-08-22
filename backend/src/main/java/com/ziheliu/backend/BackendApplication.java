@@ -32,7 +32,7 @@ public class BackendApplication implements Container {
 
   private final EventLoopGroup group = new NioEventLoopGroup();
   private final Bootstrap bootstrap = new Bootstrap();
-  private final IdleCheckHandler idleCheckHandler = new IdleCheckHandler(bootstrap);
+  private final IdleCheckHandler idleCheckHandler = new IdleCheckHandler();
 
   public static void main(String[] args) throws InterruptedException {
     BackendApplication app = new BackendApplication();
@@ -40,46 +40,46 @@ public class BackendApplication implements Container {
   }
 
   public void start() {
-    synchronized (bootstrap) {
-      bootstrap
-          .group(group)
-          .channel(NioSocketChannel.class)
-          .handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline()
-                .addLast(new SslHandler(getEngine()))
+    bootstrap
+        .group(group)
+        .channel(NioSocketChannel.class)
+        .handler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          protected void initChannel(SocketChannel ch) throws Exception {
+            ch.pipeline()
+              .addLast(new SslHandler(getEngine()))
 
-                .addLast(new LengthFieldPrepender(4))
-                .addLast(new ProxyEncoder())
+              .addLast(new LengthFieldPrepender(4))
+              .addLast(new ProxyEncoder())
 
-                .addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS))
-                .addLast(idleCheckHandler)
+              .addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS))
+              .addLast(idleCheckHandler)
 
-                .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
-                .addLast(new ProxyDecoder())
-                .addLast(new FrontendHandler());
-            }
-          });
-
-      for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
-        Address address = Config.getInstance().getMainAddr();
-        InetSocketAddress socketAddress = new InetSocketAddress(
-            address.getHost(), address.getPort());
-
-        ChannelFuture future = bootstrap.connect(socketAddress);
-
-        future.addListener(f -> {
-          Channel channel = ((ChannelFuture) f).channel();
-          channel.attr(Constants.ADDRESS_ENTRY).set(entry);
-
-          if (!f.isSuccess()) {
-            LOGGER.warn("Connect to {}:{} failed, cause: {}",
-                address.getHost(), address.getPort(), f.cause().getMessage());
-            ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
+              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+              .addLast(new ProxyDecoder())
+              .addLast(new FrontendHandler());
           }
         });
-      }
+
+    idleCheckHandler.setBootstrap(bootstrap);
+
+    for (AddressEntry entry : Config.getInstance().getAddressEntries()) {
+      Address address = Config.getInstance().getMainAddr();
+      InetSocketAddress socketAddress = new InetSocketAddress(
+          address.getHost(), address.getPort());
+
+      ChannelFuture future = bootstrap.connect(socketAddress);
+
+      future.addListener(f -> {
+        Channel channel = ((ChannelFuture) f).channel();
+        channel.attr(Constants.ADDRESS_ENTRY).set(entry);
+
+        if (!f.isSuccess()) {
+          LOGGER.warn("Connect to {}:{} failed, cause: {}",
+              address.getHost(), address.getPort(), f.cause().getMessage());
+          ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
+        }
+      });
     }
   }
 
