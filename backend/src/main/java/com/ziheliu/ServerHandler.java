@@ -27,6 +27,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx2) throws Exception {
+    ChannelManager.removeServerChannel(proxyMessage.getClientChannelId());
+
     ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
         proxyMessage.getClientChannelId(),
         Unpooled.EMPTY_BUFFER);

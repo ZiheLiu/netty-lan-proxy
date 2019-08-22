@@ -40,6 +40,8 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
   }
 
   private void handleCloseClientConnection(ProxyMessage proxyMessage) {
+    LOGGER.info("Close client connection with channelId#{}", proxyMessage.getClientChannelId());
+
     ChannelManager.getClientCtx(proxyMessage.getClientChannelId()).close();
     proxyMessage.getData().release();
   }

@@ -41,6 +41,6 @@ public class EchoClient {
   }
 
   public static void main(String[] args) throws InterruptedException {
-    new EchoClient("localhost", 8002).start();
+    new EchoClient("localhost", 8001).start();
   }
 }
