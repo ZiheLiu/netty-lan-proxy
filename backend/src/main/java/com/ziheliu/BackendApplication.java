@@ -19,8 +19,12 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BackendApplication implements Container {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BackendApplication.class);
+
   private EventLoopGroup group;
 
   public void start() {
@@ -50,6 +54,8 @@ public class BackendApplication implements Container {
         if (f.isSuccess()) {
           Channel channel = ((ChannelFuture) f).channel();
           channel.attr(Constants.ADDRESS_ENTRY).set(entry);
+        } else {
+          LOGGER.error("Connect to {}:{} failed, cause: {}", address.getHost(), address.getPort(), f.cause());
         }
       });
 
