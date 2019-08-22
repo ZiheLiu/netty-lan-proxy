@@ -27,6 +27,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx2) throws Exception {
+    LOGGER.info("Connection with channelId#{} is inactive, close it",
+        proxyMessage.getClientChannelId());
+
     ChannelManager.removeServerChannel(proxyMessage.getClientChannelId());
 
     ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
@@ -52,7 +55,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx2, Throwable cause) throws Exception {
-    LOGGER.error(cause.getMessage());
+    LOGGER.error("Connection with channelId#{} has exception, close it, cause: {}",
+        proxyMessage.getClientChannelId(), cause.getMessage());
 
     ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
         proxyMessage.getClientChannelId(), Unpooled.EMPTY_BUFFER);
