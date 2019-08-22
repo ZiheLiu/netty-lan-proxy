@@ -48,7 +48,7 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
 
     if (!Config.getInstance().getPassword().equals(password)) {
       LOGGER.info("Backend fails to connect to watch port#{}, "
-        + "password is wrong", proxyMessage.getClientPort());
+          + "password is wrong", proxyMessage.getClientPort());
       ctx.close();
       return;
     }

@@ -1,5 +1,6 @@
 package com.ziheliu;
 
+import com.ziheliu.common.SslContextFactory;
 import com.ziheliu.common.config.Address;
 import com.ziheliu.common.config.AddressEntry;
 import com.ziheliu.common.config.Config;
@@ -17,8 +18,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.ssl.SslHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import javax.net.ssl.SSLEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,11 @@ public class BackendApplication implements Container {
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendApplication.class);
 
   private EventLoopGroup group;
+
+  public static void main(String[] args) throws InterruptedException {
+    BackendApplication app = new BackendApplication();
+    ContainerHelper.start(Collections.singletonList(app));
+  }
 
   public void start() {
     group = new NioEventLoopGroup();
@@ -37,6 +45,8 @@ public class BackendApplication implements Container {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ch.pipeline()
+              .addLast(new SslHandler(getEngine()))
+
               .addLast(new LengthFieldPrepender(4))
               .addLast(new ProxyEncoder())
 
@@ -59,7 +69,6 @@ public class BackendApplication implements Container {
               address.getHost(), address.getPort(), f.cause());
         }
       });
-
     }
   }
 
@@ -68,8 +77,9 @@ public class BackendApplication implements Container {
     group.shutdownGracefully().syncUninterruptibly();
   }
 
-  public static void main(String[] args) throws InterruptedException {
-    BackendApplication app = new BackendApplication();
-    ContainerHelper.start(Collections.singletonList(app));
+  private SSLEngine getEngine() {
+    SSLEngine engine = SslContextFactory.getClientContext().createSSLEngine();
+    engine.setUseClientMode(true);
+    return engine;
   }
 }

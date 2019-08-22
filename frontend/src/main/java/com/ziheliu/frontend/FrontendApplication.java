@@ -1,5 +1,6 @@
 package com.ziheliu.frontend;
 
+import com.ziheliu.common.SslContextFactory;
 import com.ziheliu.common.config.Address;
 import com.ziheliu.common.config.AddressEntry;
 import com.ziheliu.common.config.Config;
@@ -15,8 +16,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.ssl.SslHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
+import javax.net.ssl.SSLEngine;
 
 public class FrontendApplication implements Container {
 
@@ -49,6 +52,8 @@ public class FrontendApplication implements Container {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ch.pipeline()
+              .addLast(new SslHandler(getEngine()))
+
               .addLast(new LengthFieldPrepender(4))
               .addLast(new ProxyEncoder())
 
@@ -79,5 +84,12 @@ public class FrontendApplication implements Container {
       Address address = entry.getFrontendAddr();
       bootstrap.bind(new InetSocketAddress(address.getHost(), address.getPort()));
     }
+  }
+
+  private SSLEngine getEngine() {
+    SSLEngine engine = SslContextFactory.getServerContext().createSSLEngine();
+    engine.setUseClientMode(false);
+    engine.setNeedClientAuth(true);
+    return engine;
   }
 }
