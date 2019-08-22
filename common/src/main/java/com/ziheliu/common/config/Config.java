@@ -39,6 +39,8 @@ public class Config {
 
   private List<AddressEntry> addressEntries;
 
+  private String password;
+
   public static Config getInstance() {
     return instance;
   }
@@ -57,5 +59,13 @@ public class Config {
 
   public void setAddressEntries(List<AddressEntry> addressEntries) {
     this.addressEntries = addressEntries;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
   }
 }

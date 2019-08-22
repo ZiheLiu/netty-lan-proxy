@@ -2,15 +2,19 @@ package com.ziheliu;
 
 import com.ziheliu.common.config.Address;
 import com.ziheliu.common.config.AddressEntry;
+import com.ziheliu.common.config.Config;
 import com.ziheliu.common.protocol.ProxyMessage;
 import com.ziheliu.common.protocol.ProxyMessageType;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.CharsetUtil;
 import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +30,13 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
         entry.getFrontendAddr().getHost(),
         entry.getFrontendAddr().getPort());
 
+    ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
+    buf.writeBytes(Config.getInstance().getPassword().getBytes(CharsetUtil.UTF_8));
+
     ProxyMessage msg = new ProxyMessage(
         ProxyMessageType.BACKEND_CONNECT,
         entry.getFrontendAddr().getPort(),
-        Unpooled.EMPTY_BUFFER);
+        buf);
     ctx.writeAndFlush(msg);
 
     super.channelActive(ctx);

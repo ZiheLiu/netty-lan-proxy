@@ -1,5 +1,6 @@
 package com.ziheliu.frontend;
 
+import com.ziheliu.common.config.Config;
 import com.ziheliu.common.protocol.ProxyMessage;
 import com.ziheliu.common.protocol.ProxyMessageType;
 import io.netty.channel.ChannelHandlerContext;
@@ -42,8 +43,17 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
   }
 
   private void handleBackendConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-    boolean res = ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
+    String password = proxyMessage.getPassword();
     proxyMessage.getData().release();
+
+    if (!Config.getInstance().getPassword().equals(password)) {
+      LOGGER.info("Backend fails to connect to watch port#{}, "
+        + "password is wrong", proxyMessage.getClientPort());
+      ctx.close();
+      return;
+    }
+
+    boolean res = ChannelManager.putBackendCtx(proxyMessage.getClientPort(), ctx);
 
     if (res) {
       LOGGER.info("Backend connects to watch port#{}", proxyMessage.getClientPort());

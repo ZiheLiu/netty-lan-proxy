@@ -14,3 +14,4 @@ addressEntries:
     serverAddr:
       host: "118.25.52.159"
       port: 22
+password: "123456"
