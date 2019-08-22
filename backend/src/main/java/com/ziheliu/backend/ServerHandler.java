@@ -1,4 +1,4 @@
-package com.ziheliu;
+package com.ziheliu.backend;
 
 import com.ziheliu.common.protocol.ProxyMessage;
 import com.ziheliu.common.protocol.ProxyMessageType;

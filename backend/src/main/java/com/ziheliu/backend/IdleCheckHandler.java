@@ -1,4 +1,4 @@
-package com.ziheliu;
+package com.ziheliu.backend;
 
 import com.ziheliu.common.config.Address;
 import com.ziheliu.common.config.AddressEntry;
