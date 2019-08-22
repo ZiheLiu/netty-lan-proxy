@@ -31,4 +31,8 @@ public class ChannelManager {
   public static ChannelHandlerContext getClientCtx(int channelId) {
     return clientChannelId2ctx.get(channelId);
   }
+
+  public static void removeClientCtx(int channelId) {
+    clientChannelId2ctx.remove(channelId);
+  }
 }
