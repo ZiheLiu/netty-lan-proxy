@@ -26,8 +26,10 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
         entry.getFrontendAddr().getHost(),
         entry.getFrontendAddr().getPort());
 
-    ProxyMessage msg = new ProxyMessage(ProxyMessageType.SETUP_BACKEND_CONNECTION,
-        entry.getFrontendAddr().getPort(), Unpooled.EMPTY_BUFFER);
+    ProxyMessage msg = new ProxyMessage(
+        ProxyMessageType.SETUP_BACKEND_CONNECTION,
+        entry.getFrontendAddr().getPort(),
+        Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(msg);
 
     super.channelActive(ctx);
@@ -51,22 +53,27 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
       AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();
       Address serverAddr = entry.getServerAddr();
       InetSocketAddress socketAddress = new InetSocketAddress(
-        serverAddr.getHost(), serverAddr.getPort());
+          serverAddr.getHost(), serverAddr.getPort());
 
       ChannelFuture future = bootstrap.connect(socketAddress);
       future.addListener(f -> {
         if (!f.isSuccess()) {
           LOGGER.error("Channel#{} Connect to {}:{} failed, cause: {}.",
-            proxyMessage.getClientChannelId(), serverAddr.getHost(), serverAddr.getPort(), f.cause());
+              proxyMessage.getClientChannelId(),
+              serverAddr.getHost(),
+              serverAddr.getPort(),
+              f.cause());
 
           proxyMessage.getData().release();
-          ctx.writeAndFlush(new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
-            proxyMessage.getClientChannelId(), Unpooled.EMPTY_BUFFER));
+          ctx.writeAndFlush(new ProxyMessage(
+              ProxyMessageType.CLOSE_CLIENT_CONNECTION,
+              proxyMessage.getClientChannelId(),
+              Unpooled.EMPTY_BUFFER));
         } else {
           LOGGER.info("Channel#{} Connect to {}:{} success",
-            proxyMessage.getClientChannelId(), serverAddr.getHost(), serverAddr.getPort());
-          ChannelManager.putServerChannel(proxyMessage.getClientChannelId(),
-            ((ChannelFuture) f).channel());
+              proxyMessage.getClientChannelId(), serverAddr.getHost(), serverAddr.getPort());
+          ChannelManager.putServerChannel(
+              proxyMessage.getClientChannelId(), ((ChannelFuture) f).channel());
         }
       });
     } else {

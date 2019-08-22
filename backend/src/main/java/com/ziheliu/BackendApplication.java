@@ -55,7 +55,8 @@ public class BackendApplication implements Container {
           Channel channel = ((ChannelFuture) f).channel();
           channel.attr(Constants.ADDRESS_ENTRY).set(entry);
         } else {
-          LOGGER.error("Connect to {}:{} failed, cause: {}", address.getHost(), address.getPort(), f.cause());
+          LOGGER.error("Connect to {}:{} failed, cause: {}",
+              address.getHost(), address.getPort(), f.cause());
         }
       });
 

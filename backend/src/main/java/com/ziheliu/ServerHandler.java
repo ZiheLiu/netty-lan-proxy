@@ -55,8 +55,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     LOGGER.error(cause.getMessage());
 
     ProxyMessage res = new ProxyMessage(ProxyMessageType.CLOSE_CLIENT_CONNECTION,
-    proxyMessage.getClientChannelId(),
-    Unpooled.EMPTY_BUFFER);
+        proxyMessage.getClientChannelId(), Unpooled.EMPTY_BUFFER);
     ctx.writeAndFlush(res);
 
     ctx2.close();
