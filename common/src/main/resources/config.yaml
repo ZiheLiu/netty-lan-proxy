@@ -4,14 +4,8 @@ mainAddr:
 addressEntries:
   - frontendAddr:
       host: "localhost"
-      port: 8001
-    serverAddr:
-      host: "localhost"
-      port: 9001
-  - frontendAddr:
-      host: "localhost"
       port: 8002
     serverAddr:
-      host: "118.25.52.159"
-      port: 22
+      host: "localhost"
+      port: 9000
 password: "123456"
