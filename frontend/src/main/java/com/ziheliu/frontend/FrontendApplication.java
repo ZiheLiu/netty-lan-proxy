@@ -12,11 +12,7 @@ import com.ziheliu.common.protocol.ProxyEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
-import io.netty.channel.kqueue.KQueueServerSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -58,13 +54,13 @@ public class FrontendApplication implements Container {
             ch.pipeline()
 //              .addLast(new SslHandler(getEngine()))
 
-              .addLast(new LengthFieldPrepender(4))
+              .addLast(new LengthFieldPrepender(2))
               .addLast(new ProxyEncoder())
 
               .addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS))
               .addLast(new IdleCheckHandler())
 
-              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+              .addLast(new LengthFieldBasedFrameDecoder((1 << 16) - 1, 0, 2, 0, 2))
               .addLast(new ProxyDecoder())
               .addLast(new BackendHandler());
           }

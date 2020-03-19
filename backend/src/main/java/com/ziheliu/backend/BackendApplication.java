@@ -55,7 +55,7 @@ public class BackendApplication implements Container {
               .addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS))
               .addLast(idleCheckHandler)
 
-              .addLast(new LengthFieldBasedFrameDecoder(60 * 1024, 0, 4, 0, 4))
+              .addLast(new LengthFieldBasedFrameDecoder((1 << 16) - 1, 0, 2, 0, 2))
               .addLast(new ProxyDecoder())
               .addLast(new FrontendHandler());
           }
