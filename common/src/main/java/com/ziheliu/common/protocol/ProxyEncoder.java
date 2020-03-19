@@ -1,14 +1,17 @@
 package com.ziheliu.common.protocol;
 
-import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageEncoder;
+import java.util.List;
 
-public class ProxyEncoder extends MessageToByteEncoder<ProxyMessage> {
+public class ProxyEncoder extends MessageToMessageEncoder<ProxyMessage> {
   @Override
-  protected void encode(ChannelHandlerContext ctx, ProxyMessage msg, ByteBuf out) throws Exception {
-    out.writeByte(msg.getType());
-    out.writeInt(msg.getClientChannelId());
-    out.writeBytes(msg.getData());
+  protected void encode(ChannelHandlerContext ctx, ProxyMessage msg, List<Object> out) throws Exception {
+    CompositeByteBuf buf = ctx.alloc().compositeBuffer(3);
+    buf.addComponent(true, ctx.alloc().buffer(1).writeByte(msg.getType()));
+    buf.addComponent(true, ctx.alloc().buffer(4).writeInt(msg.getClientChannelId()));
+    buf.addComponent(true, msg.getData());
+    out.add(buf);
   }
 }
