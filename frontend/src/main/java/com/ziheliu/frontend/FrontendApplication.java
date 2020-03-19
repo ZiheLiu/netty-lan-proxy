@@ -6,17 +6,19 @@ import com.ziheliu.common.config.AddressEntry;
 import com.ziheliu.common.config.Config;
 import com.ziheliu.common.container.Container;
 import com.ziheliu.common.container.ContainerHelper;
+import com.ziheliu.common.factory.NettyFactory;
 import com.ziheliu.common.protocol.ProxyDecoder;
 import com.ziheliu.common.protocol.ProxyEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -25,8 +27,8 @@ import javax.net.ssl.SSLEngine;
 
 public class FrontendApplication implements Container {
 
-  private EventLoopGroup bossGroup = new NioEventLoopGroup(2);
-  private EventLoopGroup workerGroup = new NioEventLoopGroup();
+  private EventLoopGroup bossGroup = NettyFactory.getInstance().createEventLoopGroup(2);
+  private EventLoopGroup workerGroup = NettyFactory.getInstance().createEventLoopGroup();
 
   public static void main(String[] args) throws InterruptedException {
     FrontendApplication app = new FrontendApplication();
@@ -49,12 +51,12 @@ public class FrontendApplication implements Container {
     ServerBootstrap bootstrap = new ServerBootstrap();
     bootstrap
         .group(bossGroup, workerGroup)
-        .channel(NioServerSocketChannel.class)
+        .channel(NettyFactory.getInstance().getServerSocketChannelClass())
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ch.pipeline()
-              .addLast(new SslHandler(getEngine()))
+//              .addLast(new SslHandler(getEngine()))
 
               .addLast(new LengthFieldPrepender(4))
               .addLast(new ProxyEncoder())
@@ -76,7 +78,7 @@ public class FrontendApplication implements Container {
     ServerBootstrap bootstrap = new ServerBootstrap();
     bootstrap
         .group(bossGroup, workerGroup)
-        .channel(NioServerSocketChannel.class)
+        .channel(NettyFactory.getInstance().getServerSocketChannelClass())
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {

@@ -79,4 +79,9 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
     ChannelManager.getClientCtx(proxyMessage.getClientChannelId())
         .writeAndFlush(proxyMessage.getData());
   }
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    LOGGER.error("Backend channel gets error: " + cause);
+  }
 }

@@ -6,6 +6,7 @@ import com.ziheliu.common.config.AddressEntry;
 import com.ziheliu.common.config.Config;
 import com.ziheliu.common.container.Container;
 import com.ziheliu.common.container.ContainerHelper;
+import com.ziheliu.common.factory.NettyFactory;
 import com.ziheliu.common.protocol.ProxyDecoder;
 import com.ziheliu.common.protocol.ProxyEncoder;
 import io.netty.bootstrap.Bootstrap;
@@ -13,12 +14,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class BackendApplication implements Container {
   private static final Logger LOGGER = LoggerFactory.getLogger(BackendApplication.class);
 
-  private final EventLoopGroup group = new NioEventLoopGroup();
+  private final EventLoopGroup group = NettyFactory.getInstance().createEventLoopGroup();
   private final Bootstrap bootstrap = new Bootstrap();
   private final IdleCheckHandler idleCheckHandler = new IdleCheckHandler();
 
@@ -42,12 +42,12 @@ public class BackendApplication implements Container {
   public void start() {
     bootstrap
         .group(group)
-        .channel(NioSocketChannel.class)
+        .channel(NettyFactory.getInstance().getSocketChannelClass())
         .handler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ch.pipeline()
-              .addLast(new SslHandler(getEngine()))
+//              .addLast(new SslHandler(getEngine()))
 
               .addLast(new LengthFieldPrepender(4))
               .addLast(new ProxyEncoder())

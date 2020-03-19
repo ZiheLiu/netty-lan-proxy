@@ -2,6 +2,7 @@ package com.ziheliu.backend;
 
 import com.ziheliu.common.config.Address;
 import com.ziheliu.common.config.AddressEntry;
+import com.ziheliu.common.factory.NettyFactory;
 import com.ziheliu.common.protocol.ProxyMessage;
 import com.ziheliu.common.protocol.ProxyMessageType;
 import io.netty.bootstrap.Bootstrap;
@@ -10,7 +11,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
       Bootstrap bootstrap = new Bootstrap();
       bootstrap
         .group(ctx.channel().eventLoop())
-        .channel(NioSocketChannel.class)
+        .channel(NettyFactory.getInstance().getSocketChannelClass())
         .handler(new ServerHandler(ctx, proxyMessage));
 
       AddressEntry entry = ctx.channel().attr(Constants.ADDRESS_ENTRY).get();

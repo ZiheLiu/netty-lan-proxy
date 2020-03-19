@@ -52,4 +52,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     ChannelHandlerContext backendCtx = channel.attr(Constants.BACKEND_CTX).get();
     backendCtx.flush();
   }
+
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    LOGGER.error("Client Channel gets error: " + cause);
+  }
 }
