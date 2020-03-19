@@ -17,17 +17,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     InetSocketAddress address = (InetSocketAddress) ctx.channel().localAddress();
     int frontendPort = address.getPort();
-    ChannelHandlerContext backendCtx = ChannelManager.getBackendCtx(frontendPort);
+    ctx.channel().attr(Constants.FRONTEND_PORT).set(frontendPort);
 
-    if (backendCtx == null) {
-      LOGGER.warn("The port {} do not create channel to backend.", frontendPort);
-      ctx.close();
-    } else {
-      ctx.channel().attr(Constants.BACKEND_CTX).set(backendCtx);
-
-      int channelId = ChannelManager.putClientCtx(ctx);
-      ctx.channel().attr(Constants.CHANNEL_ID).set(channelId);
-    }
+    int channelId = ChannelManager.putClientCtx(ctx);
+    ctx.channel().attr(Constants.CHANNEL_ID).set(channelId);
 
     super.channelActive(ctx);
   }
@@ -41,16 +34,18 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     int channelId = channel.attr(Constants.CHANNEL_ID).get();
     ProxyMessage proxyMessage = new ProxyMessage(ProxyMessageType.CLIENT_DATA, channelId, buf);
 
-    ChannelHandlerContext backendCtx = channel.attr(Constants.BACKEND_CTX).get();
+    int frontendPort = ctx.channel().attr(Constants.FRONTEND_PORT).get();
+    ChannelHandlerContext backendCtx = ChannelManager.getBackendCtx(frontendPort);
+
     backendCtx.write(proxyMessage);
   }
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-    Channel channel = ctx.channel();
-
-    ChannelHandlerContext backendCtx = channel.attr(Constants.BACKEND_CTX).get();
-    backendCtx.flush();
+    int frontendPort = ctx.channel().attr(Constants.FRONTEND_PORT).get();
+    for (ChannelHandlerContext backendCtx : ChannelManager.getBackendCtxList(frontendPort)) {
+      backendCtx.flush();
+    }
   }
 
   @Override

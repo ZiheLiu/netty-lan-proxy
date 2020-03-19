@@ -20,6 +20,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.EventExecutor;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -68,18 +69,20 @@ public class BackendApplication implements Container {
       InetSocketAddress socketAddress = new InetSocketAddress(
           address.getHost(), address.getPort());
 
-      ChannelFuture future = bootstrap.connect(socketAddress);
+      for (int i = 0; i < 6; i++) {
+        ChannelFuture future = bootstrap.connect(socketAddress);
 
-      future.addListener(f -> {
-        Channel channel = ((ChannelFuture) f).channel();
-        channel.attr(Constants.ADDRESS_ENTRY).set(entry);
+        future.addListener(f -> {
+          Channel channel = ((ChannelFuture) f).channel();
+          channel.attr(Constants.ADDRESS_ENTRY).set(entry);
 
-        if (!f.isSuccess()) {
-          LOGGER.warn("Connect to {}:{} failed, cause: {}",
+          if (!f.isSuccess()) {
+            LOGGER.warn("Connect to {}:{} failed, cause: {}",
               address.getHost(), address.getPort(), f.cause().getMessage());
-          ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
-        }
-      });
+            ((ChannelFuture) f).channel().pipeline().fireChannelInactive();
+          }
+        });
+      }
     }
   }
 
