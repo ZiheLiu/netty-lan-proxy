@@ -4,6 +4,6 @@ import com.blade.Blade;
 
 public class Application {
   public static void main(String[] args) {
-    Blade.of().get("/",ctx -> ctx.text("Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. Hello Blade. ")).start();
+    Blade.of().get("/",ctx -> ctx.text("Hello Blade.")).start();
   }
 }

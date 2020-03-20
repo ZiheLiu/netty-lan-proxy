@@ -2,20 +2,25 @@ package com.ziheliu.common.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import java.util.List;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
-public class ProxyDecoder extends ByteToMessageDecoder {
+public class ProxyDecoder extends LengthFieldBasedFrameDecoder {
+  public ProxyDecoder() {
+    super((1 << 16) - 1, 0, 2, 0, 2);
+  }
+
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    final byte type = in.readByte();
-    final int clientChannelId = in.readInt();
+  protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+    ByteBuf frame = (ByteBuf) super.decode(ctx, in);
+    if (frame == null) {
+      return null;
+    }
 
-    ByteBuf data = in.slice().retain();
-    in.readerIndex(in.writerIndex());
+    final byte type = frame.readByte();
+    final int clientChannelId = frame.readInt();
 
-    ProxyMessage msg = new ProxyMessage(type, clientChannelId, data);
+    ByteBuf data = frame.slice();
 
-    out.add(msg);
+    return new ProxyMessage(type, clientChannelId, data);
   }
 }

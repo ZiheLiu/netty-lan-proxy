@@ -24,7 +24,7 @@ import javax.net.ssl.SSLEngine;
 public class FrontendApplication implements Container {
 
   private EventLoopGroup bossGroup = NettyFactory.getInstance().createEventLoopGroup(2);
-  private EventLoopGroup workerGroup = NettyFactory.getInstance().createEventLoopGroup();
+  private EventLoopGroup workerGroup = NettyFactory.getInstance().createEventLoopGroup(4);
 
   public static void main(String[] args) throws InterruptedException {
     FrontendApplication app = new FrontendApplication();
@@ -52,7 +52,7 @@ public class FrontendApplication implements Container {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
             ch.pipeline()
-//              .addLast(new SslHandler(getEngine()))
+              // .addLast(new SslHandler(getEngine()))
 
               .addLast(new LengthFieldPrepender(2))
               .addLast(new ProxyEncoder())
@@ -60,7 +60,6 @@ public class FrontendApplication implements Container {
               .addLast(new IdleStateHandler(5, 0, 0, TimeUnit.SECONDS))
               .addLast(new IdleCheckHandler())
 
-              .addLast(new LengthFieldBasedFrameDecoder((1 << 16) - 1, 0, 2, 0, 2))
               .addLast(new ProxyDecoder())
               .addLast(new BackendHandler());
           }

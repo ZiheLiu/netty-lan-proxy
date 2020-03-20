@@ -9,8 +9,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChannelManager {
-  private static Map<Integer, List<ChannelHandlerContext>> port2backendCtx = new ConcurrentHashMap<>();
-//  private static Map<Integer, AtomicInteger> port2counter = new ConcurrentHashMap<>();
+  private static
+      Map<Integer, List<ChannelHandlerContext>> port2backendCtx = new ConcurrentHashMap<>();
+  //  private static Map<Integer, AtomicInteger> port2counter = new ConcurrentHashMap<>();
   private static Map<ChannelHandlerContext, Integer> backendCtx2port = new ConcurrentHashMap<>();
 
   private static
@@ -33,8 +34,6 @@ public class ChannelManager {
 
   public static ChannelHandlerContext getBackendCtx(int port) {
     List<ChannelHandlerContext> ctxList = port2backendCtx.get(port);
-//    port2counter.computeIfAbsent(port, (key) -> new AtomicInteger());
-//    int id = port2counter.get(port).getAndIncrement();
     return ctxList.get(ThreadLocalRandom.current().nextInt(0, ctxList.size()));
   }
 

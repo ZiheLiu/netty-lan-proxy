@@ -24,7 +24,7 @@ public abstract class NettyFactory {
   static {
     switch (OsUtil.osType) {
       case MaxOS:
-        instance = new MaxOsNettyFactory();
+        instance = new GenericNettyFactory();
         break;
       case Linux:
         instance = new LinuxNettyFactory();
@@ -40,8 +40,11 @@ public abstract class NettyFactory {
   }
 
   public abstract Class<? extends ServerSocketChannel> getServerSocketChannelClass();
+
   public abstract Class<? extends SocketChannel> getSocketChannelClass();
-  public abstract EventLoopGroup createEventLoopGroup(int nThreads);
+
+  public abstract EventLoopGroup createEventLoopGroup(int threads);
+
   public abstract EventLoopGroup createEventLoopGroup();
 
   static class MaxOsNettyFactory extends NettyFactory {
@@ -56,8 +59,8 @@ public abstract class NettyFactory {
     }
 
     @Override
-    public EventLoopGroup createEventLoopGroup(int nThreads) {
-      return new KQueueEventLoopGroup(nThreads);
+    public EventLoopGroup createEventLoopGroup(int threads) {
+      return new KQueueEventLoopGroup(threads);
     }
 
     @Override
@@ -78,8 +81,8 @@ public abstract class NettyFactory {
     }
 
     @Override
-    public EventLoopGroup createEventLoopGroup(int nThreads) {
-      return new EpollEventLoopGroup(nThreads);
+    public EventLoopGroup createEventLoopGroup(int threads) {
+      return new EpollEventLoopGroup(threads);
     }
 
     @Override
@@ -100,8 +103,8 @@ public abstract class NettyFactory {
     }
 
     @Override
-    public EventLoopGroup createEventLoopGroup(int nThreads) {
-      return new NioEventLoopGroup(nThreads);
+    public EventLoopGroup createEventLoopGroup(int threads) {
+      return new NioEventLoopGroup(threads);
     }
 
     @Override

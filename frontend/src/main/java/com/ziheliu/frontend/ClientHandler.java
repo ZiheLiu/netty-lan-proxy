@@ -37,15 +37,15 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     int frontendPort = ctx.channel().attr(Constants.FRONTEND_PORT).get();
     ChannelHandlerContext backendCtx = ChannelManager.getBackendCtx(frontendPort);
 
-    backendCtx.write(proxyMessage);
+    backendCtx.writeAndFlush(proxyMessage);
   }
 
   @Override
   public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-    int frontendPort = ctx.channel().attr(Constants.FRONTEND_PORT).get();
-    for (ChannelHandlerContext backendCtx : ChannelManager.getBackendCtxList(frontendPort)) {
-      backendCtx.flush();
-    }
+    //    int frontendPort = ctx.channel().attr(Constants.FRONTEND_PORT).get();
+    //    for (ChannelHandlerContext backendCtx : ChannelManager.getBackendCtxList(frontendPort)) {
+    //      backendCtx.flush();
+    //    }
   }
 
   @Override

@@ -7,10 +7,13 @@ import java.util.List;
 
 public class ProxyEncoder extends MessageToMessageEncoder<ProxyMessage> {
   @Override
-  protected void encode(ChannelHandlerContext ctx, ProxyMessage msg, List<Object> out) throws Exception {
-    CompositeByteBuf buf = ctx.alloc().compositeBuffer(3);
-    buf.addComponent(true, ctx.alloc().buffer(1).writeByte(msg.getType()));
-    buf.addComponent(true, ctx.alloc().buffer(4).writeInt(msg.getClientChannelId()));
+  protected void encode(ChannelHandlerContext ctx, ProxyMessage msg, List<Object> out)
+      throws Exception {
+    CompositeByteBuf buf = ctx.alloc().compositeBuffer(2);
+    buf.addComponent(true,
+        ctx.alloc().buffer(5)
+          .writeByte(msg.getType())
+          .writeInt(msg.getClientChannelId()));
     buf.addComponent(true, msg.getData());
     out.add(buf);
   }

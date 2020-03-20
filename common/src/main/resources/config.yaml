@@ -1,11 +1,11 @@
 mainAddr:
-  host: "localhost"
+  host: "127.0.0.1"
   port: 8000
 addressEntries:
   - frontendAddr:
-      host: "localhost"
+      host: "127.0.0.1"
       port: 8002
     serverAddr:
-      host: "localhost"
+      host: "127.0.0.1"
       port: 9000
 password: "123456"
