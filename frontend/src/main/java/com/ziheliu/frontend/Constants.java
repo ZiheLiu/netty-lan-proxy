@@ -5,7 +5,7 @@ import io.netty.util.AttributeKey;
 
 public interface Constants {
   public static final
-      AttributeKey<Integer> FRONTEND_PORT = AttributeKey.newInstance("FRONTEND_PORT");
+      AttributeKey<ChannelHandlerContext> BACKEND_CTX = AttributeKey.newInstance("BACKEND_CTX");
 
   public static final
       AttributeKey<Integer> CHANNEL_ID = AttributeKey.newInstance("CHANNEL_ID");
